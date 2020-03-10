@@ -1,0 +1,16 @@
+#!/bin/bash
+OS="hadoop/centos:2.0"
+ipaddrs=("172.2.0.2" "172.2.0.3" "172.2.0.4" "172.2.0.5" "172.2.0.6");
+list=("master" "secondmaster" "slave1" "slave2" "slave3")
+#docker network  create  -d bridge --subnet=172.2.0.0/24 --gateway=172.2.0.1 -o parent=en1 br
+docker rm -f $(docker ps -aq) 
+for((i=0;i<5;i++))
+do
+  if [ $i == 0 ];
+  then
+     docker run -d -h ${list[$i]} --name=${list[$i]}  -v /Users/wuzishi/wudocker/config/hosts:/etc/hosts  -v  /Users/wuzishi/wudocker/resources/input:/input -p 50071:50070 -p 8087:8088  --privileged=true --net=br  --ip=${ipaddrs[$i]} $OS  /usr/sbin/init 
+   else
+       docker run -d -h ${list[$i]} --name=${list[$i]}  -v /Users/wuzishi/wudocker/config/hosts:/etc/hosts   --privileged=true --net=br  --ip=${ipaddrs[$i]} $OS  /usr/sbin/init   
+ fi
+done
+docker exec -it master /bin/bash
